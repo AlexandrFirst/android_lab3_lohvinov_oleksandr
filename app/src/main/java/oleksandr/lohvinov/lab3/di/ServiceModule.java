@@ -24,8 +24,8 @@ public final class ServiceModule {
 
     @ServiceScoped
     @Provides
-    public static MusicDatabase provideMusicDatabase(){
-        return new MusicDatabase();
+    public static MusicDatabase provideMusicDatabase(@ApplicationContext Context context){
+        return new MusicDatabase(context);
     }
 
     @ServiceScoped

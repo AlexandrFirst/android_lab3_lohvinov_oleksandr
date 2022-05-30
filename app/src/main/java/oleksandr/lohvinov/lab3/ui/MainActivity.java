@@ -1,9 +1,13 @@
 package oleksandr.lohvinov.lab3.ui;
 
+import android.content.pm.PackageManager;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -29,6 +33,7 @@ import oleksandr.lohvinov.lab3.ui.viewmodels.MainViewModel;
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
 
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
 
     MainViewModel mainViewModel;
 
@@ -72,10 +77,13 @@ public class MainActivity extends AppCompatActivity {
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
 
-                if (PlaybackStateCompatExt.isPlaying(playbackState) == true) {
-                    mainViewModel.playOrToggleSong(swipeSongAdapter.getSongs().get(position), true);
-                } else {
-                    curPlayingSong = swipeSongAdapter.getSongs().get(position);
+                if (playbackState != null) {
+
+                    if (PlaybackStateCompatExt.isPlaying(playbackState) == true) {
+                        mainViewModel.playOrToggleSong(swipeSongAdapter.getSongs().get(position), true);
+                    } else {
+                        curPlayingSong = swipeSongAdapter.getSongs().get(position);
+                    }
                 }
             }
         });
@@ -94,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Navigation.findNavController(navHostFragment).addOnDestinationChangedListener((controller, destination, arguments) -> {
-            switch (destination.getId()){
+            switch (destination.getId()) {
                 case R.id.songFragment:
                     hideBottomBar();
                     break;
@@ -130,8 +138,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
     private void subscribeToObserves() {
-        ImageView ivCurSongImage = findViewById(R.id.ivCurSongImage);
         mainViewModel.getMediaItems().observe(this, it -> {
             if (it != null) {
                 switch (it.getStatus()) {
@@ -139,17 +147,28 @@ public class MainActivity extends AppCompatActivity {
                         List<Song> songs = it.getData();
                         swipeSongAdapter.setSongs(songs);
 
+                        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+                        byte[] rawArt = null;
+
                         if (!songs.isEmpty()) {
                             if (curPlayingSong == null) {
-                                glide.load(songs.get(0).imageUrl).into(ivCurSongImage);
+                                mmr.setDataSource(this, Uri.parse(songs.get(0).imageUrl));
                             } else {
-                                glide.load(curPlayingSong.imageUrl).into(ivCurSongImage);
+                                mmr.setDataSource(this, Uri.parse(curPlayingSong.imageUrl));
                             }
+
+                            rawArt = mmr.getEmbeddedPicture();
+
+                            if (rawArt!=null) {
+                                glide.load(rawArt).into(ivCurSongImage);
+                            }
+
                             if (curPlayingSong == null) {
                                 return;
                             }
                             switchViewPagerToCurrentSong(curPlayingSong);
                         }
+
                         break;
                     case ERROR:
                     case LOADING:
@@ -167,7 +186,15 @@ public class MainActivity extends AppCompatActivity {
             if (curPlayingSong == null) {
                 return;
             }
-            glide.load(curPlayingSong.imageUrl).into(ivCurSongImage);
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+            byte[] rawArt = null;
+            mmr.setDataSource(this, Uri.parse(curPlayingSong.imageUrl));
+            rawArt = mmr.getEmbeddedPicture();
+            if (rawArt!=null) {
+                glide.load(rawArt).into(ivCurSongImage);
+            }else{
+                ivCurSongImage.setImageResource(R.drawable.default_music_icon);
+            }
             switchViewPagerToCurrentSong(curPlayingSong);
         });
 
@@ -209,5 +236,20 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        if (requestCode == MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            } else {
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

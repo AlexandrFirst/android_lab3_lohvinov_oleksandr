@@ -38,7 +38,7 @@ public final class AppModule {
     @Provides
     public static RequestManager provideGlideInstance(@ApplicationContext Context context){
         return Glide.with(context).setDefaultRequestOptions(
-                new RequestOptions().placeholder(R.drawable.ic_baseline_alarm_24)
+                new RequestOptions().placeholder(R.drawable.default_music_icon)
                 .error(R.drawable.ic_baseline_alarm_24)
                 .diskCacheStrategy(DiskCacheStrategy.DATA)
         );

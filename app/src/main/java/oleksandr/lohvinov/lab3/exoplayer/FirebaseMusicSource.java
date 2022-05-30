@@ -7,19 +7,12 @@ import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 
-import androidx.annotation.NonNull;
-
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,40 +34,26 @@ public class FirebaseMusicSource {
 
     public void fetchMediaData() {
         setState(MusicSourceState.STATE_INITIALIZING);
-        musicDatabase.getAllSongs().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+        List<Song> allSongs = musicDatabase.getAllLocalSongs();
 
-                List<Song> allSongs = new ArrayList<>();
-                for (QueryDocumentSnapshot document : task.getResult()) {
 
-                    Map vals = document.getData();
-                    Song s = new Song(vals.get("mediaid").toString(),
-                            vals.get("title").toString(),
-                            vals.get("subtitle").toString(),
-                            vals.get("songUrl").toString(),
-                            vals.get("imageUrl").toString());
-                    allSongs.add(s);
-                }
+        songs = Stream.of(allSongs).flatMap(songs -> songs.stream()).map(song -> new MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.subtitle)
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, song.mediaId)
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, song.title)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, song.imageUrl)
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, song.songUrl)
+                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, song.imageUrl)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, song.subtitle)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, song.subtitle).build())
+                .collect(Collectors.toList());
 
-                songs = Stream.of(allSongs).flatMap(songs -> songs.stream()).map(song -> new MediaMetadataCompat.Builder()
-                        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.subtitle)
-                        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, song.mediaId)
-                        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)
-                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, song.title)
-                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, song.imageUrl)
-                        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, song.songUrl)
-                        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, song.imageUrl)
-                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, song.subtitle)
-                        .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, song.subtitle).build())
-                        .collect(Collectors.toList());
-
-                setState(MusicSourceState.STATE_INITIALIZED);
-            }
-        });
+        setState(MusicSourceState.STATE_INITIALIZED);
     }
 
-    public ConcatenatingMediaSource asMediaSource(DefaultDataSourceFactory dataSourceFactory){
+
+    public ConcatenatingMediaSource asMediaSource(DefaultDataSourceFactory dataSourceFactory) {
         ConcatenatingMediaSource concatenatingMediaSource = new ConcatenatingMediaSource();
         songs.forEach(song -> {
             ProgressiveMediaSource mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
@@ -84,9 +63,8 @@ public class FirebaseMusicSource {
         return concatenatingMediaSource;
     }
 
-    public List<MediaBrowserCompat.MediaItem> asMediaItems()
-    {
-        return songs.stream().map(song ->{
+    public List<MediaBrowserCompat.MediaItem> asMediaItems() {
+        return songs.stream().map(song -> {
             MediaDescriptionCompat desc = new MediaDescriptionCompat.Builder()
                     .setMediaUri(Uri.parse(song.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI)))
                     .setTitle(song.getDescription().getTitle())

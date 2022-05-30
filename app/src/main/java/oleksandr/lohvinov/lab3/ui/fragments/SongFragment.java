@@ -1,5 +1,7 @@
 package oleksandr.lohvinov.lab3.ui.fragments;
 
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.View;
@@ -126,7 +128,18 @@ public class SongFragment extends Fragment {
         String title = song.title + " - " + song.subtitle;
 
         tvSongName.setText(title);
-        glide.load(song.imageUrl).into(ivSongImage);
+
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        byte[] rawArt = null;
+        mmr.setDataSource(getContext(), Uri.parse(curPlayingSong.imageUrl));
+        rawArt = mmr.getEmbeddedPicture();
+        if (rawArt!=null) {
+            glide.load(rawArt).into(ivSongImage);
+        }else{
+            ivSongImage.setImageResource(R.drawable.default_music_icon);
+        }
+
+
     }
 
     private void subscribeToObserves() {

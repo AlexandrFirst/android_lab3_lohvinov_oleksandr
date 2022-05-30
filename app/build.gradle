@@ -32,6 +32,7 @@ android {
     }
 }
 ext.kotlin_version = '1.4.31'
+
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.4.1'
@@ -54,5 +55,8 @@ dependencies {
     api "com.google.android.exoplayer:exoplayer-core:2.11.8"
     api "com.google.android.exoplayer:exoplayer-ui:2.11.8"
     api "com.google.android.exoplayer:extension-mediasession:2.11.8"
+
+    implementation "com.github.permissions-dispatcher:permissionsdispatcher:4.9.2"
+    annotationProcessor "com.github.permissions-dispatcher:permissionsdispatcher-processor:4.9.2"
 
 }

@@ -24,8 +24,9 @@
         android:id="@+id/ivSongImage"
         android:layout_width="300dp"
         android:layout_height="300dp"
-        android:background="@color/darkBackground"
+        android:background="#FFFFFF"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        android:src="@drawable/default_music_icon"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />

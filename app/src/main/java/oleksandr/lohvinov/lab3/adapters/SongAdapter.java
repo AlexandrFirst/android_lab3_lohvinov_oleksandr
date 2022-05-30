@@ -1,5 +1,9 @@
 package oleksandr.lohvinov.lab3.adapters;
 
+import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -11,17 +15,20 @@ import com.google.android.material.textview.MaterialTextView;
 
 import javax.inject.Inject;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import oleksandr.lohvinov.lab3.R;
 import oleksandr.lohvinov.lab3.data.entities.Song;
 
 public class SongAdapter extends BaseSongAdapter {
 
     private RequestManager glide;
+    private Context context;
 
     @Inject
-    public SongAdapter(RequestManager glide) {
+    public SongAdapter(RequestManager glide, @ApplicationContext Context context) {
         super(R.layout.list_item);
         this.glide = glide;
+        this.context = context;
     }
 
 
@@ -36,7 +43,21 @@ public class SongAdapter extends BaseSongAdapter {
 
         tvPrimary.setText(song.title);
         tvSecondary.setText(song.subtitle);
-        glide.load(song.imageUrl).into(ivItemImage);
+
+
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        byte[] rawArt = null;
+        BitmapFactory.Options bfo = new BitmapFactory.Options();
+
+        mmr.setDataSource(context, Uri.parse(song.imageUrl));
+        rawArt = mmr.getEmbeddedPicture();
+
+        if (rawArt!=null) {
+            glide.load(rawArt).into(ivItemImage);
+        }
+
+
+
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,7 +70,7 @@ public class SongAdapter extends BaseSongAdapter {
 
     @Override
     AsyncListDiffer differ() {
-        if(differ == null){
+        if (differ == null) {
             differ = new AsyncListDiffer<>(this, diffCallback);
         }
         return differ;
