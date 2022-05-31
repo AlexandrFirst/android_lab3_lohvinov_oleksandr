@@ -17,7 +17,6 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -28,7 +27,6 @@ import oleksandr.lohvinov.lab3.exoplayer.MusicServiceConnection;
 import oleksandr.lohvinov.lab3.exoplayer.PlaybackStateCompatExt;
 import oleksandr.lohvinov.lab3.other.Event;
 import oleksandr.lohvinov.lab3.other.Resource;
-import oleksandr.lohvinov.lab3.other.Status;
 
 @HiltViewModel
 public class MainViewModel extends ViewModel {
@@ -70,33 +68,22 @@ public class MainViewModel extends ViewModel {
         });
     }
 
-    public void skipToRandomSong() {
-        Resource<List<Song>> mediaItems = getMediaItems().getValue();
-        Status s = mediaItems.getStatus();
-        switch (s) {
-            case SUCCESS:
-                List<Song> songs = mediaItems.getData();
-                int randomIndex = ThreadLocalRandom.current().nextInt(0, songs.size());
-                Song song = songs.get(randomIndex);
-                playOrToggleSong(song);
-                break;
-            case ERROR:
-            case LOADING:
-                return;
-        }
-    }
-
     public void SetMode(String mode) {
-        if (musicServiceConnection.transportControl() == null) {
-            return;
+
+        if(!mode.equals(RANDOM_SONG_LIST)){
+            musicServiceConnection.transportControl().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE);
         }
-        if (mode.isEmpty() || mode.equals(STRAIGHT_SONG_LIST) || mode.equals(RANDOM_SONG_LIST)) {
+
+        if (mode.isEmpty() || mode.equals(STRAIGHT_SONG_LIST)) {
             musicServiceConnection.transportControl().setRepeatMode(REPEAT_MODE_NONE);
         } else if (mode.equals(REPEAT_ONE_SONG)) {
             musicServiceConnection.transportControl().setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ONE);
         } else if (mode.equals(REPEAT_ALL_SONG)) {
             musicServiceConnection.transportControl().setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ALL);
-        } else {
+        } else if (mode.equals(RANDOM_SONG_LIST)){
+            musicServiceConnection.transportControl().setRepeatMode(REPEAT_MODE_NONE);
+            musicServiceConnection.transportControl().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL);
+        }else {
             musicServiceConnection.transportControl().setRepeatMode(REPEAT_MODE_NONE);
         }
 
