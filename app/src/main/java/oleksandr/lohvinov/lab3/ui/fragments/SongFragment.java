@@ -1,5 +1,9 @@
 package oleksandr.lohvinov.lab3.ui.fragments;
 
+import static oleksandr.lohvinov.lab3.other.Constants.REPEAT_ALL_SONG;
+import static oleksandr.lohvinov.lab3.other.Constants.REPEAT_ONE_SONG;
+import static oleksandr.lohvinov.lab3.other.Constants.STRAIGHT_SONG_LIST;
+
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,6 +32,7 @@ import oleksandr.lohvinov.lab3.R;
 import oleksandr.lohvinov.lab3.data.entities.Song;
 import oleksandr.lohvinov.lab3.exoplayer.MediaMetadataCompatExt;
 import oleksandr.lohvinov.lab3.exoplayer.PlaybackStateCompatExt;
+import oleksandr.lohvinov.lab3.other.Constants;
 import oleksandr.lohvinov.lab3.ui.viewmodels.MainViewModel;
 import oleksandr.lohvinov.lab3.ui.viewmodels.SongViewModel;
 
@@ -54,6 +59,8 @@ public class SongFragment extends Fragment {
     private PlaybackStateCompat playbackState;
 
     private boolean shouldUpdateSeekbar = true;
+
+    private String songOrderType = "";
 
     public SongFragment() {
         super(R.layout.fragment_song);
@@ -89,14 +96,22 @@ public class SongFragment extends Fragment {
         ivSkipPrevious.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mainViewModel.skipToPreviousSong();
+                if (songOrderType.equals(Constants.RANDOM_SONG_LIST)) {
+                    mainViewModel.skipToRandomSong();
+                } else {
+                    mainViewModel.skipToPreviousSong();
+                }
             }
         });
 
         ivSkip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mainViewModel.skipToNextSong();
+                if (songOrderType.equals(Constants.RANDOM_SONG_LIST)) {
+                    mainViewModel.skipToRandomSong();
+                } else {
+                    mainViewModel.skipToNextSong();
+                }
             }
         });
 
@@ -133,9 +148,9 @@ public class SongFragment extends Fragment {
         byte[] rawArt = null;
         mmr.setDataSource(getContext(), Uri.parse(curPlayingSong.imageUrl));
         rawArt = mmr.getEmbeddedPicture();
-        if (rawArt!=null) {
+        if (rawArt != null) {
             glide.load(rawArt).into(ivSongImage);
-        }else{
+        } else {
             ivSongImage.setImageResource(R.drawable.default_music_icon);
         }
 
@@ -143,6 +158,22 @@ public class SongFragment extends Fragment {
     }
 
     private void subscribeToObserves() {
+
+        mainViewModel.songOrderType.observe(getViewLifecycleOwner(), it -> {
+            if (it == null || it.isEmpty()) {
+                mainViewModel.SetMode(STRAIGHT_SONG_LIST);
+                return;
+            }
+            songOrderType = it;
+            if (songOrderType.equals(REPEAT_ONE_SONG)) {
+                mainViewModel.SetMode(REPEAT_ONE_SONG);
+            } else if (songOrderType.equals(REPEAT_ALL_SONG)) {
+                mainViewModel.SetMode(REPEAT_ALL_SONG);
+            } else {
+                mainViewModel.SetMode(STRAIGHT_SONG_LIST);
+            }
+        });
+
         mainViewModel.getMediaItems().observe(getViewLifecycleOwner(), it -> {
             if (it != null) {
                 switch (it.getStatus()) {

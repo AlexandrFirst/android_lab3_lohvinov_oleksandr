@@ -12,4 +12,11 @@ public class Constants {
 
     public static final Long UPDATE_PLAYER_POSITION_INTERVAL = 100L;
 
+    public static final String REPEAT_ONE_SONG = "repeat_one";
+    public static final String REPEAT_ALL_SONG = "repeat_all";
+    public static final String STRAIGHT_SONG_LIST = "straight";
+    public static final String RANDOM_SONG_LIST = "random";
+
+    public static final String PREF_SONG_MODE = "songMode";
+
 }

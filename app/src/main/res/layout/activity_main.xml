@@ -11,7 +11,7 @@
         android:id="@+id/flFragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/vpSong"
+        app:layout_constraintBottom_toTopOf="@+id/repeatModeBtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,7 +23,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:defaultNavHost="true"
-            app:navGraph="@navigation/nav_graph"/>
+            app:navGraph="@navigation/nav_graph" />
+
 
     </FrameLayout>
 
@@ -33,6 +34,7 @@
         android:layout_height="56dp"
         android:scaleType="centerCrop"
         android:src="@drawable/default_music_icon"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -41,8 +43,9 @@
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:background="@color/darkBackground"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/ivPlayPause"
+        app:layout_constraintEnd_toStartOf="@+id/repeatModeBtn"
         app:layout_constraintStart_toEndOf="@+id/ivCurSongImage" />
 
     <ImageView
@@ -51,7 +54,17 @@
         android:layout_height="56dp"
         android:background="@color/darkBackground"
         android:src="@drawable/ic_play"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/repeatModeBtn"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/ivPlayPause"
+        app:layout_constraintStart_toEndOf="@+id/vpSong"
+        app:srcCompat="@drawable/ic_no_repeat_24" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
